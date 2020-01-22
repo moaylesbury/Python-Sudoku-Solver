@@ -110,29 +110,28 @@ class Sudoku:
 
 class Interface(tk.Frame):
 
-    def __init__(self, parent, game):
-        self.game = game
-        self.parent = parent
-        super().__init__(self, parent, game)
+    def __init__(self, master=None):
+        super().__init__(master)
         self.master = master
-        self.row, self.col = 0, 0
         self.__display()
+        self.pack()
 
     def __display(self):
-        self.parent.title("Sudoku")
-        self.pack(fill="BOTH", expand=1)
-        self.canvas = tk.Canvas(self, width=40, height=40)\
-            .pack(fill="BOTH", side="top")\
-            .bind("<Button-1>", self.click)\
-            .bind("<Key>", self.keypress)
-        self.test_button = tk.Button(self, text="Test Button", command=print("test"))\
-            .pack(fill="BOTH", side="bottom")
-        self.quit = tk.Button(self, text="QUIT", fg="red", command=self.master.destroy)\
-            .pack(fill="BOTH", side="bottom")
+        self.master.title("Sudoku")
+        self.pack(fill="both", expand=1)
+        self.canvas = tk.Canvas(self, width=40, height=40)
+        self.canvas.pack(fill="both", side="top")
+        self.canvas.bind("<Button-1>", print("click"))  # add a function for clicking
+        self.canvas.bind("<Key>", print("key pressed"))        # add a function for key pressing
+        self.test_button = tk.Button(self, text="Test Button", command=print("test"))
+        self.test_button.pack(fill="both", side="bottom")
+        self.quit = tk.Button(self, text="QUIT", fg="red", command=self.master.destroy)
+        self.quit.pack(fill="both", side="bottom")
 
 
 if __name__ == '__main__':
-    game = Sudoku()
+    # game = Sudoku()
     root = tk.Tk()
-    Interface(root, game)
+    Interface = Interface(master=root)
     root.mainloop()
+
