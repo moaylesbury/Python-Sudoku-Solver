@@ -24,7 +24,16 @@ def draw(board):
 class Sudoku:
     def __init__(self):
         self.board = np.zeros((9, 9), dtype=int)
+        self.load_board = "21738546938546971496721835524816973639547281871293546762158394953674128148932650"
+        self.load()
         self.game()
+
+    def load(self):
+        count = 0
+        for row in range(9):
+            for col in range(9):
+                self.board[col, row] = self.load_board[count]
+                count += 1
 
     def valid(self, x, y, n):
         if n not in range(1, 9):
@@ -116,7 +125,6 @@ class Interface(tk.Frame):
         self.__display()
         self.pack()
 
-
     def __display(self):
         self.dimension = 512  # just called dimension as height = width in the square grid
         self.master.title("Sudoku")
@@ -137,32 +145,66 @@ class Interface(tk.Frame):
         self.solve = tk.Button(self, text="Solve")
         self.solve.pack(fill="both", side="bottom")
 
-        self.create_grid()
+        self.__create_grid()
 
-    def create_grid(self):
+    def __create_grid(self):
         # Defining constants
-        increment = 50
-        side_padding = (self.dimension - 9 * 50) // 2
-        top_padding = 35
+        self.increment = 50
+        self.side_padding = (self.dimension - 9 * 50) // 2
+        self.top_padding = 35
 
-        right_edge = self.dimension - side_padding
-        bottom_edge = 9 * 50 + top_padding
+        self.right_edge = self.dimension - self.side_padding
+        self.bottom_edge = 9 * 50 + self.top_padding
 
-        self.canvas.create_line(side_padding, top_padding, side_padding, bottom_edge,  fill="blue")
-        self.canvas.create_line(side_padding, top_padding, right_edge, top_padding, fill="blue")
+        self.canvas.create_line(self.side_padding, self.top_padding, self.side_padding, self.bottom_edge, fill="blue")
+        self.canvas.create_line(self.side_padding, self.top_padding, self.right_edge, self.top_padding, fill="blue")
         for i in range(1, 10):
             colour = "blue" if i % 3 == 0 else "gray"
-            self.canvas.create_line(side_padding + i * increment, top_padding, side_padding + i * increment, bottom_edge, fill=colour)
-            self.canvas.create_line(side_padding, top_padding + i * increment, right_edge, top_padding + i * increment, fill=colour)
+            self.canvas.create_line(self.side_padding + i * self.increment, self.top_padding,
+                                    self.side_padding + i * self.increment, self.bottom_edge, fill=colour)
+            self.canvas.create_line(self.side_padding, self.top_padding + i * self.increment, self.right_edge,
+                                    self.top_padding + i * self.increment, fill=colour)
 
     def click(self, event):
-        print("click")
+        # Only continue if game is not over, check that. if it is done return
+        """
+        If game over
+            return
+        """
+        # Check x and y are in play area
+        # if self.side_padding <= event.x <= self.right_edge and self.top_padding <= event.y <= self.bottom_edge:
+        # print("In play")
+        print(event.x)
+
+        self.canvas.delete("selected")
+        yaxis = [self.top_padding + 50 * i for i in range(10)]
+        xaxis = [self.side_padding + 50 * i for i in range(10)]
+        x0, x1, y0, y1 = 0, 0, 0, 0
+        x, y = event.x, event.y
+        print(xaxis[3])
+        print()
+        for i in range(len(xaxis) - 1):
+            if xaxis[i] <= x <= xaxis[i + 1]:
+                x0 = xaxis[i]
+                x1 = xaxis[i + 1]
+                print("test")
+            if yaxis[i] <= y <= yaxis[i + 1]:
+                y0 = yaxis[i]
+                y1 = yaxis[i + 1]
+                print("test2")
+        print("{} {} {} {}".format(x0, x1, y0, y1))
+        self.canvas.create_rectangle(x0, y0, x1, y1, outline="red", tags="selected")
+
+        # print(event.x, event.y)
 
     def key_press(self, event):
-        print("press")
+        ## if game not over add according to sudoku rules
+        if event.char in "012345678":
+            self.canvas.create_text(event.x, event.y, text=event.char)
+
 
 if __name__ == '__main__':
-    # game = Sudoku()
+    game = Sudoku()
     root = tk.Tk()
     Interface = Interface(master=root)
     root.mainloop()
