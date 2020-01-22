@@ -116,22 +116,53 @@ class Interface(tk.Frame):
         self.__display()
         self.pack()
 
+
     def __display(self):
+        self.dimension = 512  # just called dimension as height = width in the square grid
         self.master.title("Sudoku")
         self.pack(fill="both", expand=1)
-        self.canvas = tk.Canvas(self, width=40, height=40)
+        self.canvas = tk.Canvas(self, width=self.dimension, height=self.dimension)
         self.canvas.pack(fill="both", side="top")
-        self.canvas.bind("<Button-1>", print("click"))  # add a function for clicking
-        self.canvas.bind("<Key>", print("key pressed"))        # add a function for key pressing
-        self.test_button = tk.Button(self, text="Test Button", command=print("test"))
-        self.test_button.pack(fill="both", side="bottom")
-        self.quit = tk.Button(self, text="QUIT", fg="red", command=self.master.destroy)
+        self.canvas.bind("<Button-1>", self.click)  # add a function for clicking
+        self.canvas.bind("<Key>", self.key_press)  # add a function for key pressing
+
+        # Buttons at the bottom
+
+        self.quit = tk.Button(self, text="Quit", fg="red", command=self.master.destroy)
         self.quit.pack(fill="both", side="bottom")
 
+        self.clear = tk.Button(self, text="Clear Board")
+        self.clear.pack(fill="both", side="bottom")
+
+        self.solve = tk.Button(self, text="Solve")
+        self.solve.pack(fill="both", side="bottom")
+
+        self.create_grid()
+
+    def create_grid(self):
+        # Defining constants
+        increment = 50
+        side_padding = (self.dimension - 9 * 50) // 2
+        top_padding = 35
+
+        right_edge = self.dimension - side_padding
+        bottom_edge = 9 * 50 + top_padding
+
+        self.canvas.create_line(side_padding, top_padding, side_padding, bottom_edge,  fill="blue")
+        self.canvas.create_line(side_padding, top_padding, right_edge, top_padding, fill="blue")
+        for i in range(1, 10):
+            colour = "blue" if i % 3 == 0 else "gray"
+            self.canvas.create_line(side_padding + i * increment, top_padding, side_padding + i * increment, bottom_edge, fill=colour)
+            self.canvas.create_line(side_padding, top_padding + i * increment, right_edge, top_padding + i * increment, fill=colour)
+
+    def click(self, event):
+        print("click")
+
+    def key_press(self, event):
+        print("press")
 
 if __name__ == '__main__':
     # game = Sudoku()
     root = tk.Tk()
     Interface = Interface(master=root)
     root.mainloop()
-
