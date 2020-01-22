@@ -24,16 +24,7 @@ def draw(board):
 class Sudoku:
     def __init__(self):
         self.board = np.zeros((9, 9), dtype=int)
-        self.load_board = "21738546938546971496721835524816973639547281871293546762158394953674128148932650"
-        self.load()
         self.game()
-
-    def load(self):
-        count = 0
-        for row in range(9):
-            for col in range(9):
-                self.board[col, row] = self.load_board[count]
-                count += 1
 
     def valid(self, x, y, n):
         if n not in range(1, 9):
@@ -99,7 +90,7 @@ class Sudoku:
             return False
 
     def game(self):
-        play = True
+        play = False
 
         draw(self.board)
 
@@ -117,11 +108,12 @@ class Sudoku:
                 play = False
 
 
-class Interface(tk.Frame):
+class Interface(tk.Frame, object):
 
-    def __init__(self, master=None):
+    def __init__(self, game, master=None):
         super().__init__(master)
         self.master = master
+        self.game = game
         self.__display()
         self.pack()
 
@@ -164,6 +156,37 @@ class Interface(tk.Frame):
                                     self.side_padding + i * self.increment, self.bottom_edge, fill=colour)
             self.canvas.create_line(self.side_padding, self.top_padding + i * self.increment, self.right_edge,
                                     self.top_padding + i * self.increment, fill=colour)
+        self.draw()
+
+    def draw(self):
+        x, y = 56, 60
+        xs = []
+        ys = []
+
+        # x coords
+        vx = [56 + self.increment * i for i in range(9)]
+        for i in range(9):
+            for v in vx:
+                xs.append(v)
+        #print(xs)
+        # y coords
+        vy = [60 + self.increment * j for j in range(9)]
+        for v in vy:
+            for i in range(9):
+                ys.append(v)
+        # drawing
+        count = 0
+        for k in self.game.board:
+            for l in k:
+                self.canvas.create_text(xs[count], ys[count], text=l)
+                count += 1
+
+        print(xs)
+        print(ys)
+
+
+        #for k in np.nditer(self.game.board):
+        #    self.canvas.create_text(x, y, text=self.game.board[y][x])
 
     def click(self, event):
         # Only continue if game is not over, check that. if it is done return
@@ -181,18 +204,13 @@ class Interface(tk.Frame):
         xaxis = [self.side_padding + 50 * i for i in range(10)]
         x0, x1, y0, y1 = 0, 0, 0, 0
         x, y = event.x, event.y
-        print(xaxis[3])
-        print()
         for i in range(len(xaxis) - 1):
             if xaxis[i] <= x <= xaxis[i + 1]:
                 x0 = xaxis[i]
                 x1 = xaxis[i + 1]
-                print("test")
             if yaxis[i] <= y <= yaxis[i + 1]:
                 y0 = yaxis[i]
                 y1 = yaxis[i + 1]
-                print("test2")
-        print("{} {} {} {}".format(x0, x1, y0, y1))
         self.canvas.create_rectangle(x0, y0, x1, y1, outline="red", tags="selected")
 
         # print(event.x, event.y)
@@ -205,6 +223,8 @@ class Interface(tk.Frame):
 
 if __name__ == '__main__':
     game = Sudoku()
+    game.__init__()
+
     root = tk.Tk()
-    Interface = Interface(master=root)
+    Interface = Interface(game, root)
     root.mainloop()
