@@ -112,8 +112,7 @@ class Interface(tk.Frame, object):
 
     def __init__(self, game, master=None):
         super().__init__(master)
-        self.col = 0
-        self.row = 0
+        self.col, self.row = 0, 0
         self.master = master
         self.game = game
         self.__display()
@@ -133,7 +132,7 @@ class Interface(tk.Frame, object):
         self.quit = tk.Button(self, text="Quit", fg="red", command=self.master.destroy)
         self.quit.pack(fill="both", side="bottom")
 
-        self.clear = tk.Button(self, text="Clear Board")
+        self.clear = tk.Button(self, text="Clear Board", command=self.clear)
         self.clear.pack(fill="both", side="bottom")
 
         self.solve = tk.Button(self, text="Solve")
@@ -188,6 +187,7 @@ class Interface(tk.Frame, object):
                 count += 1
 
     def __click(self, event):
+        print(self.finished())
         # Only continue if game is not over, check that. if it is done return
         """
         If game over
@@ -217,14 +217,78 @@ class Interface(tk.Frame, object):
         # print(event.x, event.y)
 
     def __key_press(self, event):
-        print("test")
-        print(event.char)
         x = 0
+        self.event = event.char
         ## if game not over add according to sudoku rules
-        if event.char in "123456789":
+        #print("truth", self.valid())
+        if self.valid():
             self.game.board[self.col][self.row] = event.char
             self.draw()
 
+    def clear(self):
+        self.game.board = np.zeros((9, 9), dtype=int)
+        self.draw()
+
+    def valid(self):
+        # FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+        #   if self.event in self.game.board[0:3, 0:3]:
+        # Having problem with python and numpy clashes so cant use self.even in self.game.board...
+        if self.event not in "123456789":
+            return False
+        if self.event in [""+str(r) for r in self.game.board[:, self.row]]:
+            print("Error: n already in column")
+            return False
+        if self.event in [""+str(c) for c in self.game.board[self.col, :]]:
+            print("Error: n already in row")
+            return False
+        print(self.event, [""+str(i) for i in np.reshape(self.game.board[0:3, 0:3], 9)])
+        if 0 <= self.col <= 2:
+            if 0 <= self.row <= 2:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[0:3, 0:3], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+            if 3 <= self.row <= 5:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[3:6, 0:3], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+            if 6 <= self.row <= 9:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[6:9, 0:3], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+        if 3 <= self.col <= 5:
+            if 0 <= self.row <= 2:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[0:3, 3:6], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+            if 3 <= self.row <= 5:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[3:6, 3:6], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+            if 6 <= self.row <= 9:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[6:9, 3:6], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+        if 6 <= self.col <= 9:
+            if 0 <= self.row <= 2:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[0:3, 6:10], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+            if 3 <= self.row <= 5:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[3:6, 6:10], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+            if 6 <= self.row <= 9:
+                if self.event in [""+str(i) for i in np.reshape(self.game.board[6:9, 6:10], 9)]:
+                    print("Error: n already in sub-grid")
+                    return False
+        return True
+
+    def finished(self):
+        for k in self.game.board:
+            for l in k:
+                if l == 0:
+                    return False
+        return True
 
 
 if __name__ == '__main__':
