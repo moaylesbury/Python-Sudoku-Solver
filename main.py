@@ -92,7 +92,7 @@ class Sudoku:
     def game(self):
         play = False
 
-        draw(self.board)
+        #draw(self.board)
 
         while play:
             print("Enter \"xyn\" to change the number at (x,y) to n")
@@ -102,7 +102,7 @@ class Sudoku:
             n = int(inp[2])
             if self.valid(x, y, n):
                 self.board[y, x] = n
-                draw(self.board)
+                #draw(self.board)
             if self.complete():
                 print("Sudoku complete!")
                 play = False
@@ -112,6 +112,8 @@ class Interface(tk.Frame, object):
 
     def __init__(self, game, master=None):
         super().__init__(master)
+        self.col = 0
+        self.row = 0
         self.master = master
         self.game = game
         self.__display()
@@ -123,8 +125,8 @@ class Interface(tk.Frame, object):
         self.pack(fill="both", expand=1)
         self.canvas = tk.Canvas(self, width=self.dimension, height=self.dimension)
         self.canvas.pack(fill="both", side="top")
-        self.canvas.bind("<Button-1>", self.click)  # add a function for clicking
-        self.canvas.bind("<Key>", self.key_press)  # add a function for key pressing
+        #self.canvas.bind("<Button-1>", self.__click)  # add a function for clicking
+        #self.canvas.bind("<Key>", lambda evt: self.__key_press)  # add a function for key pressing
 
         # Buttons at the bottom
 
@@ -138,6 +140,8 @@ class Interface(tk.Frame, object):
         self.solve.pack(fill="both", side="bottom")
 
         self.__create_grid()
+        self.canvas.bind("<Button-1>", self.__click)  # add a function for clicking
+        self.canvas.bind("<Key>", self.__key_press)  # add a function for key pressing
 
     def __create_grid(self):
         # Defining constants
@@ -163,6 +167,8 @@ class Interface(tk.Frame, object):
         xs = []
         ys = []
 
+        self.canvas.delete("numbers")
+
         # x coords
         vx = [56 + self.increment * i for i in range(9)]
         for i in range(9):
@@ -178,17 +184,10 @@ class Interface(tk.Frame, object):
         count = 0
         for k in self.game.board:
             for l in k:
-                self.canvas.create_text(xs[count], ys[count], text=l)
+                self.canvas.create_text(xs[count], ys[count], text=l, tags="numbers")
                 count += 1
 
-        print(xs)
-        print(ys)
-
-
-        #for k in np.nditer(self.game.board):
-        #    self.canvas.create_text(x, y, text=self.game.board[y][x])
-
-    def click(self, event):
+    def __click(self, event):
         # Only continue if game is not over, check that. if it is done return
         """
         If game over
@@ -197,28 +196,35 @@ class Interface(tk.Frame, object):
         # Check x and y are in play area
         # if self.side_padding <= event.x <= self.right_edge and self.top_padding <= event.y <= self.bottom_edge:
         # print("In play")
-        print(event.x)
 
         self.canvas.delete("selected")
-        yaxis = [self.top_padding + 50 * i for i in range(10)]
-        xaxis = [self.side_padding + 50 * i for i in range(10)]
-        x0, x1, y0, y1 = 0, 0, 0, 0
+        self.yaxis = [self.top_padding + 50 * i for i in range(10)]
+        self.xaxis = [self.side_padding + 50 * i for i in range(10)]
+        self.x0, x1, self.y0, y1 = 0, 0, 0, 0
         x, y = event.x, event.y
-        for i in range(len(xaxis) - 1):
-            if xaxis[i] <= x <= xaxis[i + 1]:
-                x0 = xaxis[i]
-                x1 = xaxis[i + 1]
-            if yaxis[i] <= y <= yaxis[i + 1]:
-                y0 = yaxis[i]
-                y1 = yaxis[i + 1]
-        self.canvas.create_rectangle(x0, y0, x1, y1, outline="red", tags="selected")
-
+        self.canvas.focus_set()
+        for i in range(len(self.xaxis) - 1):
+            if self.xaxis[i] <= x <= self.xaxis[i + 1]:
+                self.row = i
+                self.x0 = self.xaxis[i]
+                x1 = self.xaxis[i + 1]
+            if self.yaxis[i] <= y <= self.yaxis[i + 1]:
+                self.col = i
+                self.y0 = self.yaxis[i]
+                y1 = self.yaxis[i + 1]
+        self.canvas.create_rectangle(self.x0, self.y0, x1, y1, outline="red", tags="selected")
+        print(self.row, self.col)
         # print(event.x, event.y)
 
-    def key_press(self, event):
+    def __key_press(self, event):
+        print("test")
+        print(event.char)
+        x = 0
         ## if game not over add according to sudoku rules
-        if event.char in "012345678":
-            self.canvas.create_text(event.x, event.y, text=event.char)
+        if event.char in "123456789":
+            self.game.board[self.col][self.row] = event.char
+            self.draw()
+
 
 
 if __name__ == '__main__':
