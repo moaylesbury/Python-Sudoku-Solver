@@ -229,6 +229,23 @@ class Interface(tk.Frame, object):
             return False
         return True
 
+    def valid2(self, x, y, n):
+        row, col = y, x
+        rr, rc = gridrange(row), gridrange(col)
+        if n not in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+            return False
+        if n in [r for r in self.game.board[:, row]]:
+            print("Error: n already in column")
+            return False
+        if n in [c for c in self.game.board[col, :]]:
+            print("Error: n already in row")
+            return False
+
+        if n in [i for i in np.reshape(self.game.board[rc[0]:rc[1], rr[0]:rr[1]], 9)]:
+            print("Error: n already in sub-grid")
+            return False
+        return True
+
     def finished(self):
         for i in self.game.board:
             for j in i:
@@ -246,12 +263,38 @@ class Interface(tk.Frame, object):
         count = 0
         attempts = []
 
+        for x in range(9):
+            for y in range(9):
+                self.game.board[x][y]
+                fail_count = 0
+                for n in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+
+                    if self.valid2(x, y, n):
+                        print("x, y, n")
+                        print(x, y, n)
+                        backtrack = False
+                        self.game.board[x][y] = n
+                        self.draw()
+                        break
+                    else:
+                        fail_count += 1
+
+
+                #if fail_count == 8:
+                #   backtrack = True
+                
+                # print("fail count", fail_count)
+                # print("backtrack?", backtrack)
+
+
+        """
         for i in range(len(board) - 70):
             attempts = []
             # 1.
             fail_count = 0
             for n in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
-                if self.valid(n):
+
+                if self.valid2(n):
                     backtrack = False
                     board[i] = n
                     self.draw()
@@ -260,15 +303,14 @@ class Interface(tk.Frame, object):
             if fail_count == 8:
                 backtrack = True
 
-
-
-
-
-
-            # 2.
             print("fail count", fail_count)
             print("backtrack?", backtrack)
+            
 
+            # 2.
+            """
+
+        """
             while backtrack:
                 count += 1
                 fail_count = 0
@@ -282,7 +324,7 @@ class Interface(tk.Frame, object):
                     fail_count += 1
                 if fail_count == 8:
                     backtrack = True
-
+                """
 
 
     """
