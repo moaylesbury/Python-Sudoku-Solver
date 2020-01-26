@@ -1,10 +1,6 @@
 import numpy as np
+import copy
 import tkinter as tk
-
-
-#  from tkinter import *
-# from tkinter.ttk import *
-
 
 def draw(board):
     print()
@@ -107,6 +103,8 @@ class Sudoku:
                 print("Sudoku complete!")
                 play = False
 
+def gridrange(x):
+    return [0, 3] if 0 <= x <= 2 else [3, 6] if 3 <= x <= 5 else [6, 9] if 6 <= x <= 9 else [0, 0]
 
 class Interface(tk.Frame, object):
 
@@ -124,10 +122,6 @@ class Interface(tk.Frame, object):
         self.pack(fill="both", expand=1)
         self.canvas = tk.Canvas(self, width=self.dimension, height=self.dimension)
         self.canvas.pack(fill="both", side="top")
-        #self.canvas.bind("<Button-1>", self.__click)  # add a function for clicking
-        #self.canvas.bind("<Key>", lambda evt: self.__key_press)  # add a function for key pressing
-
-        # Buttons at the bottom
 
         self.quit = tk.Button(self, text="Quit", fg="red", command=self.master.destroy)
         self.quit.pack(fill="both", side="bottom")
@@ -135,7 +129,7 @@ class Interface(tk.Frame, object):
         self.clear = tk.Button(self, text="Clear Board", command=self.clear)
         self.clear.pack(fill="both", side="bottom")
 
-        self.solve = tk.Button(self, text="Solve")
+        self.solve = tk.Button(self, text="Solve", command=self.backtracking_algorithm)
         self.solve.pack(fill="both", side="bottom")
 
         self.__create_grid()
@@ -162,7 +156,6 @@ class Interface(tk.Frame, object):
         self.draw()
 
     def draw(self):
-        x, y = 56, 60
         xs = []
         ys = []
 
@@ -187,16 +180,7 @@ class Interface(tk.Frame, object):
                 count += 1
 
     def __click(self, event):
-        print(self.finished())
-        # Only continue if game is not over, check that. if it is done return
-        """
-        If game over
-            return
-        """
-        # Check x and y are in play area
-        # if self.side_padding <= event.x <= self.right_edge and self.top_padding <= event.y <= self.bottom_edge:
-        # print("In play")
-
+        # TODO: Check if game is over
         self.canvas.delete("selected")
         self.yaxis = [self.top_padding + 50 * i for i in range(10)]
         self.xaxis = [self.side_padding + 50 * i for i in range(10)]
@@ -213,15 +197,12 @@ class Interface(tk.Frame, object):
                 self.y0 = self.yaxis[i]
                 y1 = self.yaxis[i + 1]
         self.canvas.create_rectangle(self.x0, self.y0, x1, y1, outline="red", tags="selected")
-        print(self.row, self.col)
-        # print(event.x, event.y)
 
     def __key_press(self, event):
+        # TODO: Check if game is over
         x = 0
-        self.event = event.char
-        ## if game not over add according to sudoku rules
-        #print("truth", self.valid())
-        if self.valid():
+        self.event = int(event.char)
+        if self.valid(self.event):
             self.game.board[self.col][self.row] = event.char
             self.draw()
 
@@ -229,66 +210,97 @@ class Interface(tk.Frame, object):
         self.game.board = np.zeros((9, 9), dtype=int)
         self.draw()
 
-    def valid(self):
+    def valid(self, v):
+        print(v)
         # FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
         #   if self.event in self.game.board[0:3, 0:3]:
         # Having problem with python and numpy clashes so cant use self.even in self.game.board...
-        if self.event not in "123456789":
+        if v not in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
             return False
-        if self.event in [""+str(r) for r in self.game.board[:, self.row]]:
+        if v in [r for r in self.game.board[:, self.row]]:
             print("Error: n already in column")
             return False
-        if self.event in [""+str(c) for c in self.game.board[self.col, :]]:
+        if v in [c for c in self.game.board[self.col, :]]:
             print("Error: n already in row")
             return False
-        print(self.event, [""+str(i) for i in np.reshape(self.game.board[0:3, 0:3], 9)])
-        if 0 <= self.col <= 2:
-            if 0 <= self.row <= 2:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[0:3, 0:3], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-            if 3 <= self.row <= 5:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[3:6, 0:3], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-            if 6 <= self.row <= 9:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[6:9, 0:3], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-        if 3 <= self.col <= 5:
-            if 0 <= self.row <= 2:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[0:3, 3:6], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-            if 3 <= self.row <= 5:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[3:6, 3:6], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-            if 6 <= self.row <= 9:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[6:9, 3:6], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-        if 6 <= self.col <= 9:
-            if 0 <= self.row <= 2:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[0:3, 6:10], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-            if 3 <= self.row <= 5:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[3:6, 6:10], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
-            if 6 <= self.row <= 9:
-                if self.event in [""+str(i) for i in np.reshape(self.game.board[6:9, 6:10], 9)]:
-                    print("Error: n already in sub-grid")
-                    return False
+        rr, rc = gridrange(self.row), gridrange(self.col)
+        if v in [i for i in np.reshape(self.game.board[rc[0]:rc[1], rr[0]:rr[1]], 9)]:
+            print("Error: n already in sub-grid")
+            return False
         return True
 
     def finished(self):
-        for k in self.game.board:
-            for l in k:
-                if l == 0:
+        for i in self.game.board:
+            for j in i:
+                if j == 0:
                     return False
         return True
+
+    def backtracking_algorithm(self):
+        original_board = np.reshape(copy.deepcopy(self.game.board), 81)
+        print(original_board)
+        board = np.reshape(self.game.board, 81)
+
+        backtrack = True
+        fail_count = 0
+        count = 0
+        attempts = []
+
+        for i in range(len(board) - 70):
+            attempts = []
+            # 1.
+            fail_count = 0
+            for n in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+                if self.valid(n):
+                    backtrack = False
+                    board[i] = n
+                    self.draw()
+                    continue
+                fail_count += 1
+            if fail_count == 8:
+                backtrack = True
+
+
+
+
+
+
+            # 2.
+            print("fail count", fail_count)
+            print("backtrack?", backtrack)
+
+            while backtrack:
+                count += 1
+                fail_count = 0
+                attempts.append(board[i])
+                for n in [j for j in range(1, 10) if j not in attempts]:
+                    if self.valid(n):
+                        backtrack = False
+                        board[i-count] = n
+                        self.draw()
+                        continue
+                    fail_count += 1
+                if fail_count == 8:
+                    backtrack = True
+
+
+
+    """
+    # Pseudo code for backtracking
+    
+    # 1. 
+    loop row:
+        loop entries in row:
+            try numbers 1-9:
+                if none are valid then backtrack    
+                
+    # 2.
+    while backtracking:
+        try numbers 1-9 but not the current one:
+            if valid stop backtracking
+    
+    """
+
 
 
 if __name__ == '__main__':
