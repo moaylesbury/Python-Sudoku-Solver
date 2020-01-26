@@ -129,7 +129,7 @@ class Interface(tk.Frame, object):
         self.clear = tk.Button(self, text="Clear Board", command=self.clear)
         self.clear.pack(fill="both", side="bottom")
 
-        self.solve = tk.Button(self, text="Solve", command=self.backtracking_algorithm)
+        self.solve = tk.Button(self, text="Solve", command=self.solving_algorithm)
         self.solve.pack(fill="both", side="bottom")
 
         self.__create_grid()
@@ -235,37 +235,151 @@ class Interface(tk.Frame, object):
         if n not in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
             return False
         if n in [r for r in self.game.board[:, row]]:
-            print("Error: n already in column")
             return False
         if n in [c for c in self.game.board[col, :]]:
-            print("Error: n already in row")
             return False
 
         if n in [i for i in np.reshape(self.game.board[rc[0]:rc[1], rr[0]:rr[1]], 9)]:
-            print("Error: n already in sub-grid")
             return False
         return True
 
     def finished(self):
-        for i in self.game.board:
-            for j in i:
-                if j == 0:
-                    return False
-        return True
+        return False if 0 in np.reshape(self.game.board, 81) else True
 
-    def backtracking_algorithm(self):
-        original_board = np.reshape(copy.deepcopy(self.game.board), 81)
-        print(original_board)
-        board = np.reshape(self.game.board, 81)
-
-        backtrack = True
-        fail_count = 0
-        count = 0
-        attempts = []
-
+    def empty(self):
         for x in range(9):
             for y in range(9):
-                self.game.board[x][y]
+                if self.game.board[x][y] == 0:
+                    return x, y
+
+    def solving_algorithm(self):
+        # Returns true if the algorithm is successful, false otherwise
+
+        if self.finished():
+            return True
+
+        x, y = self.empty()
+
+        for n in range(1, 10):
+            if self.valid2(x, y, n):
+                self.game.board[x][y] = n
+                self.draw()
+
+                if self.solving_algorithm():
+                    return True
+
+                self.game.board[x][y] = 0
+                self.draw()
+
+        return False
+
+
+        """
+        original_board = np.reshape(copy.deepcopy(self.game.board), 81)
+        board = np.reshape(self.game.board, 81)
+
+        backtrack = False
+        fail_count = 0
+        count = 0
+        iterations = 0
+        attempts = []
+
+        # Initial fill
+        for x in range(9):
+            for y in range(9):
+                for n in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+
+                    if self.valid2(x, y, n):
+                        self.game.board[x][y] = n
+                        self.draw()
+                        break
+
+        # Backtracking
+        while not self.finished():
+            print("backtrack")
+            backtrack = True
+
+            while backtrack:
+                print(iterations)
+                iterations += 1
+                print(self.game.board)
+                # Find coords of boxes before trivial boxes
+                for x in range(9):
+                    for y in range(9):
+                        if self.game.board[x][y] == 0:
+                            newx = x - 1 if x != 0 else 8
+                            newy = y if x != 0 else y - 1
+                            curr = self.game.board[newx][newy]
+                            #self.game.board[newx][newy] = 0
+                            break
+
+                print("newx, newy, curr")
+                print(newx, newy, curr)
+
+                # Now trying different numbers that haven't been used
+                fail_count = 0
+                rnge = [i for i in range(10) if i != curr]
+                for n in rnge:
+                    if self.valid2(newx, newy, n):
+                        self.game.board[newx][newy] = n
+                        self.draw()
+                        break
+                    else:
+                        fail_count += 1
+                print("FAIL COUNT")
+                print("FAIL COUNT")
+                print("FAIL COUNT")
+                print("FAIL COUNT")
+                print(fail_count)
+                print(len(rnge))
+                if fail_count < len(rnge):
+                    backtrack = False
+
+                # Now filling
+                for x in range(9):
+                    for y in range(9):
+                        for n in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
+
+                            if self.valid2(x, y, n):
+                                self.game.board[x][y] = n
+                                self.draw()
+                                break
+
+
+
+
+"""
+
+
+"""
+            if backtrack:
+                print("BACKTRACKING")
+                newx = x - count if x != 0 else 8
+                newy = y if x != 0 else y - 1
+                print(newx)
+                print(newy)
+
+                for n in [j for j in range(1, 10) if j not in attempts]:
+                    print(n)
+                    if self.valid2(newx, newy, n):
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        print("TEST")
+                        backtrack = False
+                        self.game.board[newx][newy] = n
+                        self.draw()
+                        continue
+                    else:
+                        fail_count += 1
+
                 fail_count = 0
                 for n in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
 
@@ -277,36 +391,16 @@ class Interface(tk.Frame, object):
                         self.draw()
                         break
                     else:
-                        fail_count += 1
+                        fail_count += 1"""
 
+
+"""
                 if fail_count == 9:
-                   print("BACKTRACK HERE")
-                   print("BACKTRACK HERE")
-                   print("BACKTRACK HERE")
-                   print("BACKTRACK HERE")
-
-                # print("fail count", fail_count)
-                # print("backtrack?", backtrack)
+                    backtrack = True
             """
 
-        """
-            while backtrack:
-                count += 1
-                fail_count = 0
-                attempts.append(board[i])
-                for n in [j for j in range(1, 10) if j not in attempts]:
-                    if self.valid(n):
-                        backtrack = False
-                        board[i-count] = n
-                        self.draw()
-                        continue
-                    fail_count += 1
-                if fail_count == 8:
-                    backtrack = True
-                """
 
-
-    """
+"""
     # Pseudo code for backtracking
     
     # 1. 
