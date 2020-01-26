@@ -279,35 +279,14 @@ class Interface(tk.Frame, object):
                     else:
                         fail_count += 1
 
+                if fail_count == 9:
+                   print("BACKTRACK HERE")
+                   print("BACKTRACK HERE")
+                   print("BACKTRACK HERE")
+                   print("BACKTRACK HERE")
 
-                #if fail_count == 8:
-                #   backtrack = True
-                
                 # print("fail count", fail_count)
                 # print("backtrack?", backtrack)
-
-
-        """
-        for i in range(len(board) - 70):
-            attempts = []
-            # 1.
-            fail_count = 0
-            for n in [1, 2, 3, 4, 5, 6, 7, 8, 9]:
-
-                if self.valid2(n):
-                    backtrack = False
-                    board[i] = n
-                    self.draw()
-                    continue
-                fail_count += 1
-            if fail_count == 8:
-                backtrack = True
-
-            print("fail count", fail_count)
-            print("backtrack?", backtrack)
-            
-
-            # 2.
             """
 
         """
